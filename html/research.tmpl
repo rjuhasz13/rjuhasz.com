@@ -1,0 +1,32 @@
+<h1>{{.PageTitle}}</h1>
+<h2>Publicatons</h2>
+{{- range .Publications -}}
+    {{template "paper" .}}
+{{- end -}}
+
+<h2>Working Papers</h2>
+{{- range .WorkingPapers -}}
+    {{template "paper" .}}
+{{- end }}
+
+{{define "paper" }}
+    <h3>{{- template "link" . -}}
+    {{if .HasCoauthors}}
+        <br>
+        {{$n := len .Coauthors}}
+        {{range $i, $e := .Coauthors}}
+            {{- if eq (plus1 $i) $n }} and
+            {{- else if $i -}}, {{- end -}}
+            {{- template "link" . -}}
+        {{end}}
+    {{end}}
+    </h3>
+    <p class="header"></p>
+    <input id="abstract{{.ID}}" class="toggle" type="checkbox">
+    <label for="abstract{{.ID}}" class="lbl-toggle">Abstract</label>
+    <p class="collapsible-content">{{.Abstract}}</p>
+{{- end -}}
+
+{{define "link" }}
+<a href="{{.URL}}" target="_blank">{{.Name}}</a>
+{{- end -}}
