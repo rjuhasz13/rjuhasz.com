@@ -61,9 +61,9 @@ func (p Page) create() error {
 	var processed bytes.Buffer
 	p.tmpl.ExecuteTemplate(&processed, "base", Data{Slug: p.slug, CV: "/cv/" + cv})
 
-	outputPath := "./dist/index.html"
+	outputPath := "./docs/index.html"
 	if p.slug != "" {
-		outputPath = "./dist/" + p.slug + "/index.html"
+		outputPath = "./docs/" + p.slug + "/index.html"
 	}
 
 	f, err := os.Create(outputPath)
@@ -82,7 +82,7 @@ func (p Page) create() error {
 }
 
 func findCV() (string, error) {
-	files, err := os.ReadDir("./dist/cv")
+	files, err := os.ReadDir("./docs/cv")
 	if err != nil {
 		return "", err
 	}
@@ -98,10 +98,10 @@ func findCV() (string, error) {
 	}
 
 	if len(cvFiles) == 0 {
-		return "", errors.New("no pdf files in 'dist/cv', please place one here")
+		return "", errors.New("no pdf files in 'docs/cv', please place one here")
 	}
 	if len(cvFiles) > 1 {
-		return "", errors.New("there are multiple pdf files in 'dist/cv', please place only one here")
+		return "", errors.New("there are multiple pdf files in 'docs/cv', please place only one here")
 	}
 
 	return cvFiles[0].Name(), nil

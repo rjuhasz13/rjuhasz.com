@@ -4,7 +4,7 @@
 
 ### Overview
 
-A small Golang program generates the static html pages from templates into the `dist` folder.
+A small Golang program generates the static html pages from templates into the `docs` folder.
 This folder is set up to be the root directory for GitHub Pages to host the site.
 Assets and documents (stylesheet, images, pdfs) are already in this folder to be
 accessable by visitors.
@@ -18,15 +18,15 @@ Required software:
 ### Modifying html files
 
 After modifying a template found in the `pages` folder (e.g. `research.tmpl`),
-run `make html` to trigger the Go program that generates the html files into `dist`.
-If you're adding new research material, place the pdf into `dist/research`
+run `make html` to trigger the Go program that generates the html files into `docs`.
+If you're adding new research material, place the pdf into `docs/research`
 so you can link to them like `/research/new-pdf-file.pdf`.
 
 ### Modifying the CV
 
-Delete the old version from `dist/cv` and add the new file.
+Delete the old version from `docs/cv` and add the new file.
 Run `make html`, this will find the new file and change the link in the menu.
-Keep only one file in `dist/cv`, otherwise the program would fail to find the right
+Keep only one file in `docs/cv`, otherwise the program would fail to find the right
 one. Don't reuse the filename, always add e.g. a date suffix, otherwise an old
 version might get served for the visitors from cache.
 
@@ -39,7 +39,7 @@ the browser will pick it on a refresh.
 
 ### Releasing changes
 
-Simply push to the `main` branch. What's on the `main` branch in the `dist`
+Simply push to the `main` branch. What's on the `main` branch in the `docs`
 folder, that's always the live version of the site.
 
 
