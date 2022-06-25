@@ -1,111 +1,113 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
-	"hash/fnv"
 	"html/template"
-	"io/ioutil"
-	"net/http"
+	"io/fs"
 	"os"
-
-	"gopkg.in/yaml.v2"
 )
 
-type Data struct {
-	CV            string  `yaml:"cv"`
-	Publications  []Paper `yaml:"publications"`
-	WorkingPapers []Paper `yaml:"working_papers"`
-	Slug          string
-}
-
-type Paper struct {
-	Title         string   `yaml:"title"`
-	URL           string   `yaml:"url"`
-	Coauthors     []Author `yaml:"coauthors"`
-	MediaCoverage []Medium `yaml:"media_coverage"`
-	Abstract      string   `yaml:"abstract"`
-}
-
-func (p Paper) ID() uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(p.Title))
-	return h.Sum32()
-}
-
-func (p Paper) Name() string {
-	return p.Title
-}
-
-func (p Paper) HasCoauthors() bool {
-	return len(p.Coauthors) > 0
-}
-
-type Author struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url"`
-}
-
-type Medium struct {
-	Name string `yaml:"name"`
-	URL  string `yaml:"url"`
-}
-
 func main() {
-	http.HandleFunc("/", homeHandler)
-	http.HandleFunc("/research", researchHandler)
-	http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil)
-}
-
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-	tmpl := template.Must(template.ParseFiles("html/base.tmpl", "html/home.tmpl", "html/style.tmpl"))
-
-	data := data()
-	data.Slug = ""
-	err := tmpl.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		panic(err)
+	if err := run(); err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
 	}
 }
 
-func researchHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/research" {
-		http.NotFound(w, r)
-		return
+func run() error {
+	if err := createPages(); err != nil {
+		return err
 	}
 
-	data := data()
-	data.Slug = "research"
-	tmpl, err := template.New("base.tmpl").Funcs(template.FuncMap{
-		"plus1": func(x int) int {
-			return x + 1
-		},
-	}).ParseFiles("html/base.tmpl", "html/research.tmpl", "html/style.tmpl")
-	if err != nil {
-		panic(err)
-	}
-
-	err = tmpl.ExecuteTemplate(w, "base", data)
-	if err != nil {
-		panic(err)
-	}
+	return nil
 }
 
-func data() Data {
-	yamlFile, err := ioutil.ReadFile("data/research.yml")
-	if err != nil {
-		panic(err)
+func createPages() error {
+	homePage := Page{
+		tmpl: template.Must(template.ParseFiles("pages/base.tmpl", "pages/home.tmpl")),
+		slug: "",
 	}
 
-	var data Data
-	err = yaml.Unmarshal(yamlFile, &data)
-	if err != nil {
-		panic(err)
+	researchPage := Page{
+		tmpl: template.Must(template.ParseFiles("pages/base.tmpl", "pages/research.tmpl")),
+		slug: "research",
 	}
 
-	fmt.Println(data)
-	return data
+	pages := []Page{homePage, researchPage}
+
+	for _, page := range pages {
+		if err := page.create(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+type Page struct {
+	tmpl *template.Template
+	slug string
+}
+
+func (p Page) create() error {
+	cv, err := findCV()
+	if err != nil {
+		return err
+	}
+
+	var processed bytes.Buffer
+	p.tmpl.ExecuteTemplate(&processed, "base", Data{Slug: p.slug, CV: "/cv/" + cv})
+
+	outputPath := "./dist/index.html"
+	if p.slug != "" {
+		outputPath = "./dist/" + p.slug + "/index.html"
+	}
+
+	f, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+
+	w := bufio.NewWriter(f)
+	w.WriteString(string(processed.Bytes()))
+	w.Flush()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func findCV() (string, error) {
+	files, err := os.ReadDir("./dist/cv")
+	if err != nil {
+		return "", err
+	}
+	// get only the ones with .pdf suffix
+	var cvFiles []fs.DirEntry
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		if file.Name()[len(file.Name())-4:] == ".pdf" {
+			cvFiles = append(cvFiles, file)
+		}
+	}
+
+	if len(cvFiles) == 0 {
+		return "", errors.New("no pdf files in 'dist/cv', please place one here")
+	}
+	if len(cvFiles) > 1 {
+		return "", errors.New("there are multiple pdf files in 'dist/cv', please place only one here")
+	}
+
+	return cvFiles[0].Name(), nil
+}
+
+type Data struct {
+	CV   string
+	Slug string
 }
