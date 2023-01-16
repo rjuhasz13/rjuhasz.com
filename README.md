@@ -1,5 +1,7 @@
 # rjuhasz.com
 
+- last update: jan 12 2023. Adding the IP project to the main page.
+
 ## Contributing
 
 ### Overview
