@@ -24,6 +24,15 @@ run `make html` to trigger the Go program that generates the html files into `do
 If you're adding new research material, place the pdf into `docs/research`
 so you can link to them like `/research/new-pdf-file.pdf`.
 
+### Adding a page
+
+1. add a template to /pages/
+2. Change the links in the .tmpl file
+3. Add page to index, and to Research/index
+4. Add page to main.go
+5. Add page to base.tmpl
+6. Add a folder to /docs, and add an index.html
+
 ### Modifying the CV
 
 Delete the old version from `docs/cv` and add the new file.
