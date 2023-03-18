@@ -36,7 +36,12 @@ func createPages() error {
 		slug: "research",
 	}
 
-	pages := []Page{homePage, researchPage}
+	teachingPage := Page{
+		tmpl: template.Must(template.ParseFiles("pages/base.tmpl", "pages/teaching.tmpl")),
+		slug: "teaching",
+	}
+
+	pages := []Page{homePage, researchPage, teachingPage}
 
 	for _, page := range pages {
 		if err := page.create(); err != nil {
