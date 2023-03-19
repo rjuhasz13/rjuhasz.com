@@ -33,6 +33,8 @@ so you can link to them like `/research/new-pdf-file.pdf`.
 5. Add page to base.tmpl
 6. Add a folder to /docs, and add an index.html
 
+The changes in the /template/ page will go to the /teaching/index once you run the make html
+
 ### Modifying the CV
 
 Delete the old version from `docs/cv` and add the new file.
